@@ -25,10 +25,12 @@ Item {
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
+        if (!root) return
         var value = String(text || "").trim()
         if (!value || value === root.lastTopology) return
         if (matchProc.running) return
         root.pendingTopology = value
+        matchProc.activeTopology = value
         matchProc.command = [root.helperPath, "profiles-match"]
         matchProc.running = true
       }
@@ -37,27 +39,35 @@ Item {
 
   Process {
     id: matchProc
-    property bool outputValid: false
+    property string activeTopology: ""
+
+    function handleResult(rawJson) {
+      if (!root || !activeTopology) return
+      try {
+        var result = JSON.parse(String(rawJson || "{}"))
+        if (result.ok === true) {
+          root.lastTopology = activeTopology
+        }
+        if (result.matched) {
+          Quickshell.execDetached(["omarchy-notification-send", "-g", "󰍺", "Display profile applied", result.name])
+        }
+      } catch (e) {}
+    }
+
     stdout: StdioCollector {
+      id: matchOutput
       waitForEnd: true
-      onStreamFinished: {
-        try {
-          var result = JSON.parse(String(text || "{}"))
-          matchProc.outputValid = result.ok === true
-          if (result.matched) Quickshell.execDetached(["omarchy-notification-send", "-g", "󰍺", "Display profile applied", result.name])
-        } catch (e) {}
-      }
+      onStreamFinished: matchProc.handleResult(text)
     }
     stderr: StdioCollector { id: matchError; waitForEnd: true }
-    onRunningChanged: if (running) outputValid = false
     onExited: function(exitCode) {
-      if (exitCode === 0 && outputValid) {
-        root.lastTopology = root.pendingTopology
-      } else {
+      if (exitCode !== 0) {
         var detail = String(matchError.text || "").trim()
         console.warn("Display profile match failed" + (detail ? ": " + detail : ""))
+      } else if (root.lastTopology !== activeTopology) {
+        matchProc.handleResult(matchOutput.text)
       }
-      root.pendingTopology = ""
+      if (root) root.pendingTopology = ""
     }
   }
 }
