@@ -6,12 +6,11 @@
   "author": "Bryan Montgomery",
   "license": "MIT",
   "description": "Windows-style multi-monitor arrangement, display controls, and automatic dock profiles for Omarchy.",
-  "kinds": ["bar-widget", "service", "overlay"],
+  "kinds": ["bar-widget", "service"],
   "activation": "on-demand",
   "entryPoints": {
     "barWidget": "DisplayManager.qml",
-    "service": "ProfileService.qml",
-    "overlay": "IdentifyOverlay.qml"
+    "service": "ProfileService.qml"
   },
   "barWidget": {
     "displayName": "Display Manager",
