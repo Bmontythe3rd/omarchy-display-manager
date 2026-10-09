@@ -14,6 +14,10 @@ Panel {
 
   property var displays: []
   property int selectedIndex: 0
+  // Set when the panel opens; the next state read then selects the focused
+  // display instead of keeping the previous index (0 on first load, which is
+  // whichever display Hyprland lists first, usually the internal panel).
+  property bool selectFocusedOnState: true
   property bool loading: false
   property bool applying: false
   property bool awaitingConfirmation: false
@@ -99,7 +103,7 @@ Panel {
   }
 
   Component.onCompleted: refresh()
-  onOpenedChanged: if (opened) refresh()
+  onOpenedChanged: if (opened) { selectFocusedOnState = true; refresh() }
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -125,6 +129,12 @@ Panel {
         if (parsed && Array.isArray(parsed)) {
           stateProc.outputValid = true
           root.displays = parsed
+          if (root.selectFocusedOnState) {
+            root.selectFocusedOnState = false
+            for (var i = 0; i < parsed.length; i++) {
+              if (parsed[i].focused === true) { root.selectedIndex = i; break }
+            }
+          }
           if (root.selectedIndex >= parsed.length) root.selectedIndex = Math.max(0, parsed.length - 1)
           root.statusMessage = root.refreshMessage
           root.refreshMessage = ""
