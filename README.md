@@ -10,7 +10,7 @@ monitors with the ease of Windows Display Settings.
 ## Features
 
 - Drag displays into position on a visual desktop canvas.
-- Identify each physical display with a numbered full-screen overlay.
+- Identify each physical display with a numbered full-screen overlay, opened from the panel's Identify button.
 - Choose resolution, refresh rate, orientation, and valid fractional scales.
 - Extend, duplicate, connect, and disconnect displays.
 - Preview every change with a 15-second automatic rollback.
@@ -112,3 +112,12 @@ syntax checks for every pull request and push to `main`. See
 ## License
 
 [MIT](LICENSE)
+
+## Opening the panel from a hotkey
+
+```bash
+omarchy-shell io.github.bmontythe3rd.display-manager toggle
+```
+
+`omarchy-shell shell toggle io.github.bmontythe3rd.display-manager` also works
+and opens the panel on the focused monitor.

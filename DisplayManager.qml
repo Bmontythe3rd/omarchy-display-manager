@@ -26,6 +26,23 @@ Panel {
   readonly property int activeCount: displays.filter(function(d) { return !d.disabled }).length
   readonly property bool validLayout: activeCount > 0 && !DisplayModel.hasOverlap(displays)
 
+  // The Identify overlay lives inside the panel rather than being a separate
+  // "overlay" plugin kind. A plugin that is also an overlay is owned by the
+  // shell's panel loader, so `omarchy-shell shell toggle <id>` opened the
+  // overlay instead of the panel and never routed to the focused monitor.
+  // Loaded on demand, so only the instance that was clicked draws it.
+  function identify() {
+    identifyLoader.active = true
+    if (identifyLoader.item) identifyLoader.item.open(JSON.stringify({ displays: root.displays }))
+  }
+
+  Loader {
+    id: identifyLoader
+    active: false
+    source: "IdentifyOverlay.qml"
+    onLoaded: item.open(JSON.stringify({ displays: root.displays }))
+  }
+
   function parseOutput(text) {
     try { return JSON.parse(String(text || "")) } catch (e) { return null }
   }
@@ -267,7 +284,7 @@ Panel {
               foreground: root.barForeground
               fontFamily: root.bar.fontFamily
               bordered: true
-              onClicked: if (root.bar && root.bar.shell) root.bar.shell.summon(root.moduleName, JSON.stringify({ displays: root.displays }))
+              onClicked: root.identify()
             }
           }
 

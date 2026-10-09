@@ -19,6 +19,12 @@ for (const kind of manifest.kinds) {
   assert.ok(fs.existsSync(path.join(projectDir, entryPoint)), `entry point does not exist for ${kind}`)
 }
 
+// An "overlay" kind hands the plugin to the shell's panel loader, so
+// `shell toggle <id>` opens the overlay and skips the focused-monitor routing
+// that only applies to plugins whose sole kind is bar-widget (plus service).
+assert.ok(!manifest.kinds.includes("overlay"), "overlay kind breaks hotkey routing; load it from the panel")
+assert.ok(!manifest.kinds.includes("panel") && !manifest.kinds.includes("menu"))
+
 assert.ok(["left", "center", "right"].includes(manifest.barWidget.defaultSection))
 
 console.log("manifest tests passed")
